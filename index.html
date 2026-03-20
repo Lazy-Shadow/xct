@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css"
+        integrity="sha512-M5Kq4YVQrjg5c2wsZSn27Dkfm/2ALfxmun0vUE3mPiJyK53hQBHYCVAtvMYEC7ZXmYLg8DVG4tF8gD27WmDbsg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="clockContainer">
+
+        <div class="mode world-clock" style="position: relative;">
+            <h1 style="text-align: center;">World Clock</h1>
+            <div id="time">
+                <div id="hours">00</div>
+                <span class="colon">:</span>
+                <div id="minutes">00</div>
+                <span class="colon">:</span>
+                <div id="seconds">00</div>
+                <div id="meridiem">PM</div>
+            </div>
+            <div id="others">
+                <div id="date">March 16, 2026</div>
+                <div id="timezone">PHT</div>
+            </div>
+        </div>
+
+        <div class="mode alarm-clock hidden" style="position: relative;">
+            <h1 style="text-align: center;">Alarm Clock</h1>
+            <div class="header" style="display:flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h2>Alarms</h2>
+                <button class="btn btn-add-alarm" style="border-radius: 50%; width: 40px; height: 40px; padding: 0;">&plus;</button>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <div id="alarmInfo">
+                        <h1 id="alarmTime" style="margin:0;">04:30 <small style="font-size: 15px;">AM</small></h1>
+                        <p id="duration" style="margin:0; font-size: 12px;">Ring once</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mode timer hidden" style="position: relative;">
+            <h1 style="text-align: center;">Timer</h1>
+            <div id="time">
+                <div id="timer-hours" contenteditable="true">00</div>:
+                <div id="timer-minutes" contenteditable="true">00</div>:
+                <div id="timer-seconds" contenteditable="true">00</div>
+            </div>
+            <div id="controls">
+                <button class="btn btn-start">Start</button>
+                <button class="btn btn-pause">Pause</button>
+                <button class="btn btn-restart">Restart</button>
+            </div>
+        </div>
+
+        <div class="mode stopwatch hidden" style="position: relative;">
+            <h1 style="text-align: center;">Stopwatch</h1>
+            <div id="time">
+                <div id="sw-minutes" contenteditable>00</div>:
+                <div id="sw-seconds" contenteditable>00</div>:
+                <div id="sw-ms" contenteditable>00</div>
+            </div>
+            <div id="controls">
+                <button class="btn btn-start">Start</button>
+                <button class="btn btn-pause">Pause</button>
+                <button class="btn btn-restart">Restart</button>
+                <button class="btn btn-lapse">Lapse</button>
+            </div>
+
+            <ul id="laps-list">
+
+            </ul>
+        </div>
+
+        <div class="controls">
+            <button class="btn active" data-mode="world-clock">World Clock</button>
+            <button class="btn" data-mode="alarm-clock">Alarm Clock</button>
+            <button class="btn" data-mode="timer">Timer</button>
+            <button class="btn" data-mode="stopwatch">Stopwatch</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

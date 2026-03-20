@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,200..1000;1,200..1000&display=swap');
+
+:root {
+    --primary: darkorange;
+    --secondary: yellow;
+    --bg-soft: #fff9f0;
+    --text-dark: #333;
+    --stopwatch-color: #00bcd4;
+    --alarm-color: #ff5252;
+}
+
+body {
+    font-family: 'Nunito Sans', sans-serif;
+    background-color: var(--bg-soft);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+#clockContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 100px;
+    position: relative;
+}
+
+/* --- The Unified Clock Display --- */
+/* Target all mode displays to keep them consistent */
+.mode #time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    padding: 20px 40px;
+    background-color: white;
+    border: 3px solid var(--primary);
+    border-radius: 20px;
+    box-shadow: 0 10px 0 var(--primary);
+    font-weight: 900;
+    color: var(--text-dark);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 320px; /* Prevents resizing when switching modes */
+}
+
+/* --- Theme Overrides --- */
+/* Apply this class to the #time div via JS when switching to Stopwatch */
+.mode.stopwatch #time {
+    border-color: var(--stopwatch-color);
+    box-shadow: 0 10px 0 var(--stopwatch-color);
+    color: var(--stopwatch-color);
+}
+
+.mode.timer #time {
+    border-color: #00d42a;
+    box-shadow: 0 10px 0 #00d42a;
+}
+
+/* --- Inner Time Elements --- */
+#time div {
+    padding: 0 5px;
+    outline: none; /* Removes border when editing */
+}
+
+#meridiem {
+    margin-left: 15px;
+    font-size: 24px;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+#others {
+    display: flex;
+    gap: 2em;
+    margin-top: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* --- Controls --- */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 3em;
+}
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn {
+    cursor: pointer;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    background-color: var(--secondary);
+    border: 2px solid var(--primary);
+    box-shadow: 0 5px 0 var(--primary);
+    transition: all .1s ease;
+}
+
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--primary);
+}
+
+.btn.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Specific Action Buttons */
+.btn-start { background-color: #00d42a; color: white; border-color: #006a15; box-shadow: 0 5px #006a15; }
+.btn-pause { background-color: #ff5252; color: white; border-color: #6e2323; box-shadow: 0 5px #6e2323; }
+.btn-restart { background-color: #ccc; border-color: #888; box-shadow: 0 5px #888; }
+
+/* --- Alarm Card --- */
+.alarm-clock { width: 400px; }
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 5px 0 var(--primary);
+}
+
+.hidden { display: none !important; }
+
+/* Animation for the colons */
+.colon {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.3; }
+}
+
+#laps-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+#laps-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-family: monospace;
+    font-weight: bold;
+}
