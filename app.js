@@ -166,4 +166,179 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.querySelector('.stopwatch .btn-lapse').addEventListener('click', recordLap);
+
+    // --- 5. ALARM LOGIC ---
+    let alarms = JSON.parse(localStorage.getItem('alarms')) || [];
+    let editingAlarmId = null;
+    let ringingAlarmId = null;
+    let ringingInterval = null;
+
+    const alarmsList = document.getElementById('alarms-list');
+    const alarmModal = document.getElementById('alarm-modal');
+    const alarmRinging = document.getElementById('alarm-ringing');
+    const ringingTime = document.getElementById('ringing-time');
+
+    const hourSelect = document.getElementById('alarm-hour');
+    const minuteSelect = document.getElementById('alarm-minute');
+    const ampmSelect = document.getElementById('alarm-ampm');
+
+    for (let i = 1; i <= 12; i++) {
+        hourSelect.innerHTML += `<option value="${i}">${String(i).padStart(2, '0')}</option>`;
+    }
+    for (let i = 0; i < 60; i++) {
+        minuteSelect.innerHTML += `<option value="${i}">${String(i).padStart(2, '0')}</option>`;
+    }
+
+    function saveAlarms() {
+        localStorage.setItem('alarms', JSON.stringify(alarms));
+    }
+
+    function formatAlarmTime(hour, minute, ampm) {
+        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} <small>${ampm}</small>`;
+    }
+
+    function renderAlarms() {
+        if (alarms.length === 0) {
+            alarmsList.innerHTML = '<p class="no-alarms">No alarms set. Click + to add one.</p>';
+            return;
+        }
+
+        alarmsList.innerHTML = alarms.map(alarm => `
+            <div class="alarm-card ${alarm.enabled ? '' : 'disabled'}" data-id="${alarm.id}">
+                <div class="alarm-info">
+                    <h1>${formatAlarmTime(alarm.hour, alarm.minute, alarm.ampm)}</h1>
+                    <p>${alarm.enabled ? 'Alarm on' : 'Alarm off'}</p>
+                </div>
+                <div class="alarm-actions">
+                    <button class="btn-delete" onclick="deleteAlarm(${alarm.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <label class="switch">
+                        <input type="checkbox" ${alarm.enabled ? 'checked' : ''} onchange="toggleAlarm(${alarm.id}, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.toggleAlarm = function(id, enabled) {
+        const alarm = alarms.find(a => a.id === id);
+        if (alarm) {
+            alarm.enabled = enabled;
+            saveAlarms();
+            renderAlarms();
+        }
+    };
+
+    window.deleteAlarm = function(id) {
+        alarms = alarms.filter(a => a.id !== id);
+        saveAlarms();
+        renderAlarms();
+    };
+
+    document.querySelector('.btn-add-alarm').addEventListener('click', () => {
+        editingAlarmId = null;
+        const now = new Date();
+        let hour = now.getHours();
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        hourSelect.value = hour;
+        minuteSelect.value = 0;
+        ampmSelect.value = ampm;
+        alarmModal.classList.remove('hidden');
+    });
+
+    document.getElementById('alarm-cancel').addEventListener('click', () => {
+        alarmModal.classList.add('hidden');
+    });
+
+    document.getElementById('alarm-save').addEventListener('click', () => {
+        const hour = parseInt(hourSelect.value);
+        const minute = parseInt(minuteSelect.value);
+        const ampm = ampmSelect.value;
+
+        if (editingAlarmId) {
+            const alarm = alarms.find(a => a.id === editingAlarmId);
+            if (alarm) {
+                alarm.hour = hour;
+                alarm.minute = minute;
+                alarm.ampm = ampm;
+            }
+        } else {
+            const newAlarm = {
+                id: Date.now(),
+                hour: hour,
+                minute: minute,
+                ampm: ampm,
+                enabled: true
+            };
+            alarms.push(newAlarm);
+        }
+
+        saveAlarms();
+        renderAlarms();
+        alarmModal.classList.add('hidden');
+    });
+
+    function triggerAlarm(alarm) {
+        ringingAlarmId = alarm.id;
+        ringingTime.innerHTML = formatAlarmTime(alarm.hour, alarm.minute, alarm.ampm);
+        alarmRinging.classList.remove('hidden');
+    }
+
+    document.getElementById('alarm-dismiss').addEventListener('click', () => {
+        alarmRinging.classList.add('hidden');
+        if (ringingAlarmId) {
+            const alarm = alarms.find(a => a.id === ringingAlarmId);
+            if (alarm) {
+                alarm.enabled = false;
+                saveAlarms();
+                renderAlarms();
+            }
+            ringingAlarmId = null;
+        }
+    });
+
+    document.getElementById('alarm-snooze').addEventListener('click', () => {
+        alarmRinging.classList.add('hidden');
+        const now = new Date();
+        const snoozeTime = new Date(now.getTime() + 5 * 60 * 1000);
+        let hour = snoozeTime.getHours();
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        
+        const snoozeAlarm = {
+            id: Date.now(),
+            hour: hour,
+            minute: snoozeTime.getMinutes(),
+            ampm: ampm,
+            enabled: true,
+            isSnooze: true
+        };
+        alarms.push(snoozeAlarm);
+        saveAlarms();
+        renderAlarms();
+        ringingAlarmId = null;
+    });
+
+    function checkAlarms() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours % 12 || 12;
+
+        alarms.forEach(alarm => {
+            if (alarm.enabled && alarm.hour === displayHour && 
+                alarm.minute === minutes && alarm.ampm === ampm) {
+                if (ringingAlarmId !== alarm.id) {
+                    triggerAlarm(alarm);
+                }
+            }
+        });
+    }
+
+    renderAlarms();
+    setInterval(checkAlarms, 1000);
 });

@@ -162,3 +162,206 @@ body {
     font-family: monospace;
     font-weight: bold;
 }
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+#alarm-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 20px 0;
+}
+
+#alarm-input select {
+    font-size: 24px;
+    padding: 10px;
+    border: 2px solid var(--alarm-color);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-cancel {
+    background-color: #ccc;
+    border-color: #888;
+    box-shadow: 0 5px #888;
+}
+
+.btn-save {
+    background-color: #00d42a;
+    color: white;
+    border-color: #006a15;
+    box-shadow: 0 5px #006a15;
+}
+
+.alarm-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 2px solid var(--alarm-color);
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 5px 0 var(--alarm-color);
+}
+
+.alarm-card.disabled {
+    opacity: 0.5;
+    border-color: #ccc;
+    box-shadow: 0 5px 0 #ccc;
+}
+
+.alarm-info h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.alarm-info h1 small {
+    font-size: 16px;
+    color: #666;
+}
+
+.alarm-info p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #888;
+}
+
+.alarm-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #ff5252;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--alarm-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.ringing-content {
+    background: var(--alarm-color);
+    color: white;
+    animation: pulse 0.5s infinite alternate;
+}
+
+.ringing-content h2 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.ringing-content p {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.alarm-ring-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-snooze {
+    background-color: #2196f3;
+    color: white;
+    border-color: #0d47a1;
+    box-shadow: 0 5px 0 #0d47a1;
+}
+
+.btn-dismiss {
+    background-color: white;
+    color: var(--alarm-color);
+    border-color: white;
+    box-shadow: 0 5px 0 #ccc;
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+.no-alarms {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+}
