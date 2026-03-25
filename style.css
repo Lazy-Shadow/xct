@@ -659,4 +659,62 @@ input:checked + .slider:before {
     text-align: center;
     color: #888;
     padding: 40px;
+    }    transition: all .1s ease;
+}
+
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--primary);
+}
+
+.btn.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Specific Action Buttons */
+.btn-start { background-color: #00d42a; color: white; border-color: #006a15; box-shadow: 0 5px #006a15; }
+.btn-pause { background-color: #ff5252; color: white; border-color: #6e2323; box-shadow: 0 5px #6e2323; }
+.btn-restart { background-color: #ccc; border-color: #888; box-shadow: 0 5px #888; }
+
+/* --- Alarm Card --- */
+.alarm-clock { width: 400px; }
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 5px 0 var(--primary);
+}
+
+.hidden { display: none !important; }
+
+/* Animation for the colons */
+.colon {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.3; }
+}
+
+#laps-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+#laps-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-family: monospace;
+    font-weight: bold;
 }

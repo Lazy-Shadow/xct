@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         secondsEl.innerText = String(s).padStart(2, '0');
         meridiemEl.innerText = ampm;
 
-        const timezoneName = new Intl.DateTimeFormat('en-US', {
+        const timezoneName = new Intl.DateTimeFormat('en-PH', {
             timeZoneName: 'short'
         }).formatToParts(now).find(part => part.type === 'timeZoneName').value;
         timezoneEl.innerText = timezoneName;
@@ -189,28 +189,30 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateWeather(lat, lon, name) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&hourly=relativehumidity_2m,apparent_temperature,windspeed_10m&timezone=auto`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=weathercode,temperature_2m,relativehumidity_2m,apparent_temperature,windspeed_10m&timezone=auto`;
         
         fetch(url)
             .then(response => response.json())
             .then(data => {
                 const current = data.current_weather;
                 const hourly = data.hourly;
-                const daily = data.daily;
                 
-                // Current weather
+                const currentHourIndex = data.hourly.time.findIndex(t => {
+                    const hourTime = new Date(t);
+                    const now = new Date();
+                    return hourTime >= now;
+                });
+                
                 weatherLocationEl.innerText = name;
                 weatherTempEl.innerText = `${Math.round(current.temperature)}°C`;
                 weatherDescEl.innerText = getWeatherInfo(current.weathercode).desc;
                 weatherIconEl.className = `fas ${getWeatherInfo(current.weathercode).icon}`;
                 
-                // Extra details (using first index of hourly for simplicity)
-                weatherHumidityEl.innerText = `${hourly.relativehumidity_2m[0]}%`;
-                weatherWindEl.innerText = `${current.windspeed || hourly.windspeed_10m[0]} km/h`;
-                weatherFeelsEl.innerText = `${Math.round(hourly.apparent_temperature[0])}°C`;
+                weatherHumidityEl.innerText = `${hourly.relativehumidity_2m[currentHourIndex]}%`;
+                weatherWindEl.innerText = `${current.windspeed || hourly.windspeed_10m[currentHourIndex]} km/h`;
+                weatherFeelsEl.innerText = `${Math.round(hourly.apparent_temperature[currentHourIndex])}°C`;
                 
-                // Forecast
-                renderForecast(daily);
+                renderForecast(hourly, currentHourIndex);
             })
             .catch(error => {
                 console.error('Error fetching weather:', error);
@@ -218,22 +220,27 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    function renderForecast(daily) {
+    function renderForecast(hourly, startIndex) {
         forecastListEl.innerHTML = '';
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(daily.time[i]);
-            const dayName = i === 0 ? 'Today' : days[date.getDay()];
-            const weatherInfo = getWeatherInfo(daily.weathercode[i]);
-            const maxTemp = Math.round(daily.temperature_2m_max[i]);
+        for (let i = 0; i < 72; i++) {
+            const idx = startIndex + i;
+            if (idx >= hourly.time.length) break;
+            
+            const date = new Date(hourly.time[idx]);
+            const dayName = i === 0 ? 'Now' : days[date.getDay()];
+            const timeStr = i === 0 ? '' : date.getHours() + ':00';
+            const weatherInfo = getWeatherInfo(hourly.weathercode[idx]);
+            const temp = Math.round(hourly.temperature_2m[idx]);
             
             const item = document.createElement('div');
             item.className = 'forecast-item';
             item.innerHTML = `
                 <span class="forecast-day">${dayName}</span>
+                ${timeStr ? `<span class="forecast-time">${timeStr}</span>` : ''}
                 <i class="fas ${weatherInfo.icon} forecast-icon"></i>
-                <span class="forecast-temp">${maxTemp}°C</span>
+                <span class="forecast-temp">${temp}°C</span>
             `;
             forecastListEl.appendChild(item);
         }
@@ -542,13 +549,19 @@ document.addEventListener('DOMContentLoaded', function () {
         alarmModal.classList.add('hidden');
     });
 
+    const alarmSound = document.getElementById('alarm-sound');
+
     function triggerAlarm(alarm) {
         ringingAlarmId = alarm.id;
         ringingTime.innerHTML = formatAlarmTime(alarm.hour, alarm.minute, alarm.ampm);
         alarmRinging.classList.remove('hidden');
+        alarmSound.currentTime = 0;
+        alarmSound.play().catch(() => {});
     }
 
     document.getElementById('alarm-dismiss').addEventListener('click', () => {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
         alarmRinging.classList.add('hidden');
         if (ringingAlarmId) {
             const alarm = alarms.find(a => a.id === ringingAlarmId);
@@ -562,6 +575,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('alarm-snooze').addEventListener('click', () => {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
         alarmRinging.classList.add('hidden');
         const now = new Date();
         const snoozeTime = new Date(now.getTime() + 5 * 60 * 1000);
