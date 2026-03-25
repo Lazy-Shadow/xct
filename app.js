@@ -45,7 +45,268 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         sessionStorage.setItem('activeClockMode', targetMode);
+
+        if (targetMode === 'weather') {
+            getWeather();
+        } else if (targetMode === 'google-map') {
+            initMap();
+        }
     }
+
+    // --- 5. WEATHER LOGIC ---
+    const weatherLocationEl = document.getElementById('weather-location');
+    const weatherTempEl = document.getElementById('weather-temp');
+    const weatherDescEl = document.getElementById('weather-desc');
+    const weatherIconEl = document.getElementById('weather-icon');
+    const weatherHumidityEl = document.getElementById('weather-humidity');
+    const weatherWindEl = document.getElementById('weather-wind');
+    const weatherFeelsEl = document.getElementById('weather-feels');
+    const forecastListEl = document.getElementById('forecast-list');
+
+    function getWeather() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Get city name using reverse geocoding (OpenStreetMap Nominatim)
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await res.json();
+                    const city = data.address.city || data.address.town || data.address.village || "Your Location";
+                    updateWeather(lat, lon, city);
+                } catch (e) {
+                    console.error("Reverse geocoding error:", e);
+                    updateWeather(lat, lon, "Your Location");
+                }
+            }, () => {
+                weatherLocationEl.innerText = "Geolocation not supported or denied";
+            });
+        } else {
+            weatherLocationEl.innerText = "Geolocation not supported";
+        }
+    }
+
+    // --- 6. GOOGLE MAP LOGIC ---
+    let mapInitialized = false;
+
+    function initMap() {
+        if (mapInitialized) return;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Get city name using reverse geocoding
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await res.json();
+                    const city = data.address.city || data.address.town || data.address.village || "Your Location";
+                    updateMap(lat, lon, city);
+                } catch (e) {
+                    updateMap(lat, lon, "Your Location");
+                }
+            }, () => {
+                handleLocationError(true);
+            });
+        } else {
+            handleLocationError(false);
+        }
+    }
+
+    function handleLocationError(browserHasGeolocation) {
+        console.error(browserHasGeolocation ?
+            "Error: The Geolocation service failed." :
+            "Error: Your browser doesn't support geolocation.");
+        document.getElementById('map').innerText = browserHasGeolocation ? 
+            "Error: The Geolocation service failed." : 
+            "Error: Your browser doesn't support geolocation.";
+    }
+
+    // --- 7. FULLSCREEN CLOSE LOGIC ---
+    document.querySelector('.btn-close-map').addEventListener('click', () => {
+        setActiveMode('world-clock');
+    });
+
+    document.querySelector('.btn-locate-me').addEventListener('click', () => {
+        mapInitialized = false; // Allow map re-initialization to current location
+        initMap();
+    });
+
+    document.querySelector('.btn-close-fullscreen').addEventListener('click', () => {
+        setActiveMode('world-clock');
+    });
+
+    // --- 8. SEARCH LOGIC ---
+    async function searchLocation(query, type) {
+        if (!query) return;
+        
+        const searchBtn = document.getElementById('map-search-btn');
+        const searchIcon = searchBtn?.querySelector('.search-icon');
+        const loadingIcon = searchBtn?.querySelector('.loading-icon');
+
+        // Show loading state
+        if (searchIcon) searchIcon.classList.add('hidden');
+        if (loadingIcon) loadingIcon.classList.remove('hidden');
+
+        try {
+            const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`);
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+                const result = data.results[0];
+                const lat = result.latitude;
+                const lon = result.longitude;
+                const name = result.name;
+
+                if (type === 'weather') {
+                    updateWeather(lat, lon, name);
+                } else if (type === 'map') {
+                    updateMap(lat, lon, name);
+                }
+            } else {
+                // If geocoding fails, fallback to direct query for the map
+                if (type === 'map') {
+                    updateMap(null, null, query);
+                } else {
+                    alert("Location not found.");
+                }
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            // Even if the API fails, try direct query for the map
+            if (type === 'map') {
+                updateMap(null, null, query);
+            } else {
+                alert("Error searching for location.");
+            }
+        } finally {
+            // Restore search icon
+            if (searchIcon) searchIcon.classList.remove('hidden');
+            if (loadingIcon) loadingIcon.classList.add('hidden');
+        }
+    }
+
+    function updateWeather(lat, lon, name) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&hourly=relativehumidity_2m,apparent_temperature,windspeed_10m&timezone=auto`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const current = data.current_weather;
+                const hourly = data.hourly;
+                const daily = data.daily;
+                
+                // Current weather
+                weatherLocationEl.innerText = name;
+                weatherTempEl.innerText = `${Math.round(current.temperature)}°C`;
+                weatherDescEl.innerText = getWeatherInfo(current.weathercode).desc;
+                weatherIconEl.className = `fas ${getWeatherInfo(current.weathercode).icon}`;
+                
+                // Extra details (using first index of hourly for simplicity)
+                weatherHumidityEl.innerText = `${hourly.relativehumidity_2m[0]}%`;
+                weatherWindEl.innerText = `${current.windspeed || hourly.windspeed_10m[0]} km/h`;
+                weatherFeelsEl.innerText = `${Math.round(hourly.apparent_temperature[0])}°C`;
+                
+                // Forecast
+                renderForecast(daily);
+            })
+            .catch(error => {
+                console.error('Error fetching weather:', error);
+                weatherLocationEl.innerText = "Error fetching weather";
+            });
+    }
+
+    function renderForecast(daily) {
+        forecastListEl.innerHTML = '';
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(daily.time[i]);
+            const dayName = i === 0 ? 'Today' : days[date.getDay()];
+            const weatherInfo = getWeatherInfo(daily.weathercode[i]);
+            const maxTemp = Math.round(daily.temperature_2m_max[i]);
+            
+            const item = document.createElement('div');
+            item.className = 'forecast-item';
+            item.innerHTML = `
+                <span class="forecast-day">${dayName}</span>
+                <i class="fas ${weatherInfo.icon} forecast-icon"></i>
+                <span class="forecast-temp">${maxTemp}°C</span>
+            `;
+            forecastListEl.appendChild(item);
+        }
+    }
+
+    function getWeatherInfo(code) {
+        const codes = {
+            0: { desc: 'Clear sky', icon: 'fa-sun' },
+            1: { desc: 'Mainly clear', icon: 'fa-cloud-sun' },
+            2: { desc: 'Partly cloudy', icon: 'fa-cloud-sun' },
+            3: { desc: 'Overcast', icon: 'fa-cloud' },
+            45: { desc: 'Fog', icon: 'fa-smog' },
+            48: { desc: 'Fog', icon: 'fa-smog' },
+            51: { desc: 'Light drizzle', icon: 'fa-cloud-rain' },
+            53: { desc: 'Moderate drizzle', icon: 'fa-cloud-rain' },
+            55: { desc: 'Dense drizzle', icon: 'fa-cloud-showers-heavy' },
+            61: { desc: 'Slight rain', icon: 'fa-cloud-rain' },
+            63: { desc: 'Moderate rain', icon: 'fa-cloud-rain' },
+            65: { desc: 'Heavy rain', icon: 'fa-cloud-showers-heavy' },
+            71: { desc: 'Slight snow', icon: 'fa-snowflake' },
+            73: { desc: 'Moderate snow', icon: 'fa-snowflake' },
+            75: { desc: 'Heavy snow', icon: 'fa-snowflake' },
+            95: { desc: 'Thunderstorm', icon: 'fa-bolt' }
+        };
+        return codes[code] || { desc: 'Cloudy', icon: 'fa-cloud' };
+    }
+
+    function updateMap(lat, lon, name) {
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+
+        // Use the iframe method as suggested by the user for searches
+        mapEl.innerHTML = `
+            <iframe 
+                width="100%" 
+                height="100%" 
+                frameborder="0" 
+                style="border:0"
+                src="https://maps.google.com/maps?q=${encodeURIComponent(name || (lat + ',' + lon))}&hl=en&z=15&output=embed"
+                allowfullscreen>
+            </iframe>
+        `;
+        mapInitialized = true; // Mark as initialized so initMap() doesn't overwrite it easily
+    }
+
+    // Event listeners for search
+    const mapSearchInput = document.getElementById('map-search');
+    const mapClearBtn = document.getElementById('map-clear-btn');
+
+    mapSearchInput.addEventListener('input', (e) => {
+        if (e.target.value.length > 0) {
+            mapClearBtn.classList.remove('hidden');
+        } else {
+            mapClearBtn.classList.add('hidden');
+        }
+    });
+
+    mapClearBtn.addEventListener('click', () => {
+        mapSearchInput.value = '';
+        mapClearBtn.classList.add('hidden');
+        mapSearchInput.focus();
+    });
+
+    document.getElementById('map-search-btn').addEventListener('click', () => {
+        const query = mapSearchInput.value;
+        searchLocation(query, 'map');
+    });
+
+    mapSearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchLocation(e.target.value, 'map');
+        }
+    });
 
     controlButtons.forEach(button => {
         button.addEventListener('click', () => setActiveMode(button.getAttribute('data-mode')));

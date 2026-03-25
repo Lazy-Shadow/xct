@@ -100,13 +100,71 @@
             </ul>
         </div>
 
+        <div class="mode weather hidden">
+            <div id="weather-fullscreen">
+                <button class="btn-close-fullscreen"><i class="fas fa-times"></i></button>
+                <div id="weather-container" class="weather-info">
+                    <p id="weather-location">Loading location...</p>
+                    <div id="weather-main-display">
+                        <i id="weather-icon" class="fas fa-cloud"></i>
+                        <div id="weather-details">
+                            <p id="weather-temp">--°C</p>
+                            <p id="weather-desc">--</p>
+                        </div>
+                    </div>
+                    <div id="weather-extra">
+                        <div class="extra-item">
+                            <i class="fas fa-tint"></i>
+                            <span id="weather-humidity">--%</span>
+                            <p>Humidity</p>
+                        </div>
+                        <div class="extra-item">
+                            <i class="fas fa-wind"></i>
+                            <span id="weather-wind">-- km/h</span>
+                            <p>Wind</p>
+                        </div>
+                        <div class="extra-item">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span id="weather-feels">--°C</span>
+                            <p>Feels like</p>
+                        </div>
+                    </div>
+                    <div id="weather-forecast">
+                        <h3>7-Day Forecast</h3>
+                        <div id="forecast-list">
+                            <!-- Forecast items will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mode google-map hidden">
+            <div id="map-container">
+                <div class="search-overlay">
+                    <input type="text" id="map-search" placeholder="Search location...">
+                    <button id="map-clear-btn" class="hidden"><i class="fas fa-times-circle"></i></button>
+                    <button id="map-search-btn">
+                        <i class="fas fa-search search-icon"></i>
+                        <i class="fas fa-spinner fa-spin loading-icon hidden"></i>
+                    </button>
+                </div>
+                <div id="map"></div>
+                <button class="btn-locate-me"><i class="fas fa-location-crosshairs"></i></button>
+                <button class="btn-close-map"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
         <div class="controls">
             <button class="btn active" data-mode="world-clock">World Clock</button>
             <button class="btn" data-mode="alarm-clock">Alarm Clock</button>
             <button class="btn" data-mode="timer">Timer</button>
             <button class="btn" data-mode="stopwatch">Stopwatch</button>
+            <button class="btn" data-mode="weather">Weather</button>
+            <button class="btn" data-mode="google-map">Google Map</button>
         </div>
     </div>
+    <!-- Load Google Maps API (API Key will be added in JS or here) -->
     <script src="app.js"></script>
 </body>
 
