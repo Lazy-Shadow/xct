@@ -14,7 +14,10 @@
     <div id="clockContainer">
 
         <div class="mode world-clock" style="position: relative;">
-            <h1 style="text-align: center;">World Clock</h1>
+            <div class="header" style="display:flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h1 style="text-align: center; margin: 0 auto;">World Clock</h1>
+                <button class="btn btn-add-city" id="btn-add-city" style="border-radius: 50%; width: 40px; height: 40px; padding: 0;">&plus;</button>
+            </div>
             <div id="time">
                 <div id="hours">00</div>
                 <span class="colon">:</span>
@@ -26,6 +29,20 @@
             <div id="others">
                 <div id="date">March 16, 2026</div>
                 <div id="timezone">PHT</div>
+            </div>
+            <div id="selected-cities-list"></div>
+        </div>
+
+        <div id="city-selection-modal" class="modal hidden">
+            <div class="modal-content" style="width: 450px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+                <h2>Add World Clock</h2>
+                <div class="city-search-container" style="padding: 10px 0;">
+                    <input type="text" id="world-city-search" placeholder="Search cities (A-Z)..." style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--primary); outline: none; font-size: 16px;">
+                </div>
+                <div id="full-cities-list" style="flex: 1; overflow-y: auto; text-align: left; padding: 10px;"></div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button class="btn btn-cancel" id="city-selection-cancel">Close</button>
+                </div>
             </div>
         </div>
 
@@ -42,12 +59,9 @@
             <div class="modal-content">
                 <h2>Set Alarm</h2>
                 <div id="alarm-input">
-                    <select id="alarm-hour"></select>:
-                    <select id="alarm-minute"></select>
-                    <select id="alarm-ampm">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
+                    <input type="number" id="alarm-hour" placeholder="HH" min="1" max="12"> :
+                    <input type="number" id="alarm-minute" placeholder="MM" min="0" max="59">
+                    <input type="text" id="alarm-ampm" placeholder="AM/PM" maxlength="2" style="width: 70px; text-transform: uppercase;">
                 </div>
                 <div class="modal-buttons">
                     <button class="btn btn-cancel" id="alarm-cancel">Cancel</button>
@@ -73,9 +87,9 @@
         <div class="mode timer hidden" style="position: relative;">
             <h1 style="text-align: center;">Timer</h1>
             <div id="time">
-                <div id="timer-hours" contenteditable="true">00</div>:
-                <div id="timer-minutes" contenteditable="true">00</div>:
-                <div id="timer-seconds" contenteditable="true">00</div>
+                <input type="number" id="timer-hours" value="00" min="0" max="99"> :
+                <input type="number" id="timer-minutes" value="00" min="0" max="59"> :
+                <input type="number" id="timer-seconds" value="00" min="0" max="59">
             </div>
             <div id="controls">
                 <button class="btn btn-start">Start</button>
@@ -87,9 +101,9 @@
         <div class="mode stopwatch hidden" style="position: relative;">
             <h1 style="text-align: center;">Stopwatch</h1>
             <div id="time">
-                <div id="sw-minutes" contenteditable>00</div>:
-                <div id="sw-seconds" contenteditable>00</div>:
-                <div id="sw-ms" contenteditable>00</div>
+                <input type="number" id="sw-minutes" value="00" readonly> :
+                <input type="number" id="sw-seconds" value="00" readonly> :
+                <input type="number" id="sw-ms" value="00" readonly>
             </div>
             <div id="controls">
                 <button class="btn btn-start">Start</button>

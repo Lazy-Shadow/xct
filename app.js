@@ -1,33 +1,241 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- 1. WORLD CLOCK LOGIC ---
     const dateEl = document.getElementById('date');
     const hoursEl = document.getElementById('hours');
     const minutesEl = document.getElementById('minutes');
     const secondsEl = document.getElementById('seconds');
     const meridiemEl = document.getElementById('meridiem');
     const timezoneEl = document.getElementById('timezone');
+    const selectedCitiesListEl = document.getElementById('selected-cities-list');
+    const fullCitiesListEl = document.getElementById('full-cities-list');
+    const citySelectionModal = document.getElementById('city-selection-modal');
+    const worldCitySearch = document.getElementById('world-city-search');
+    const btnAddCity = document.getElementById('btn-add-city');
+    const citySelectionCancel = document.getElementById('city-selection-cancel');
+
+    const allCities = [
+        { name: "Abidjan", timezone: "Africa/Abidjan", lat: 5.3364, lon: -4.0311, temp: "--" },
+        { name: "Abu Dhabi", timezone: "Asia/Abu_Dhabi", lat: 24.4539, lon: 54.3773, temp: "--" },
+        { name: "Accra", timezone: "Africa/Accra", lat: 5.6037, lon: -0.187, temp: "--" },
+        { name: "Addis Ababa", timezone: "Africa/Addis_Ababa", lat: 9.03, lon: 38.74, temp: "--" },
+        { name: "Adelaide", timezone: "Australia/Adelaide", lat: -34.9285, lon: 138.6007, temp: "--" },
+        { name: "Algiers", timezone: "Africa/Algiers", lat: 36.7538, lon: 3.0588, temp: "--" },
+        { name: "Amsterdam", timezone: "Europe/Amsterdam", lat: 52.3676, lon: 4.9041, temp: "--" },
+        { name: "Ankara", timezone: "Europe/Istanbul", lat: 39.9334, lon: 32.8597, temp: "--" },
+        { name: "Athens", timezone: "Europe/Athens", lat: 37.9838, lon: 23.7275, temp: "--" },
+        { name: "Auckland", timezone: "Pacific/Auckland", lat: -36.8485, lon: 174.7633, temp: "--" },
+        { name: "Baghdad", timezone: "Asia/Baghdad", lat: 33.3128, lon: 44.3615, temp: "--" },
+        { name: "Bangkok", timezone: "Asia/Bangkok", lat: 13.7563, lon: 100.5018, temp: "--" },
+        { name: "Beijing", timezone: "Asia/Shanghai", lat: 39.9042, lon: 116.4074, temp: "--" },
+        { name: "Beirut", timezone: "Asia/Beirut", lat: 33.8938, lon: 35.5018, temp: "--" },
+        { name: "Berlin", timezone: "Europe/Berlin", lat: 52.52, lon: 13.405, temp: "--" },
+        { name: "Bogota", timezone: "America/Bogota", lat: 4.711, lon: -74.0721, temp: "--" },
+        { name: "Brussels", timezone: "Europe/Brussels", lat: 50.8503, lon: 4.3517, temp: "--" },
+        { name: "Buenos Aires", timezone: "America/Argentina/Buenos_Aires", lat: -34.6037, lon: -58.3816, temp: "--" },
+        { name: "Cairo", timezone: "Africa/Cairo", lat: 30.0444, lon: 31.2357, temp: "--" },
+        { name: "Cape Town", timezone: "Africa/Johannesburg", lat: -33.9249, lon: 18.4241, temp: "--" },
+        { name: "Caracas", timezone: "America/Caracas", lat: 10.4806, lon: -66.9036, temp: "--" },
+        { name: "Casablanca", timezone: "Africa/Casablanca", lat: 33.5731, lon: -7.5898, temp: "--" },
+        { name: "Chicago", timezone: "America/Chicago", lat: 41.8781, lon: -87.6298, temp: "--" },
+        { name: "Copenhagen", timezone: "Europe/Copenhagen", lat: 55.6761, lon: 12.5683, temp: "--" },
+        { name: "Dakar", timezone: "Africa/Dakar", lat: 14.7167, lon: -17.4677, temp: "--" },
+        { name: "Dallas", timezone: "America/Chicago", lat: 32.7767, lon: -96.797, temp: "--" },
+        { name: "Damascus", timezone: "Asia/Damascus", lat: 33.5138, lon: 36.2765, temp: "--" },
+        { name: "Denver", timezone: "America/Denver", lat: 39.7392, lon: -104.9903, temp: "--" },
+        { name: "Dhaka", timezone: "Asia/Dhaka", lat: 23.8103, lon: 90.4125, temp: "--" },
+        { name: "Dubai", timezone: "Asia/Dubai", lat: 25.2048, lon: 55.2708, temp: "--" },
+        { name: "Dublin", timezone: "Europe/Dublin", lat: 53.3498, lon: -6.2603, temp: "--" },
+        { name: "Frankfurt", timezone: "Europe/Berlin", lat: 50.1109, lon: 8.6821, temp: "--" },
+        { name: "Geneva", timezone: "Europe/Zurich", lat: 46.2044, lon: 6.1432, temp: "--" },
+        { name: "Hanoi", timezone: "Asia/Ho_Chi_Minh", lat: 21.0285, lon: 105.8542, temp: "--" },
+        { name: "Havana", timezone: "America/Havana", lat: 23.1136, lon: -82.3666, temp: "--" },
+        { name: "Helsinki", timezone: "Europe/Helsinki", lat: 60.1695, lon: 24.9354, temp: "--" },
+        { name: "Hong Kong", timezone: "Asia/Hong_Kong", lat: 22.3193, lon: 114.1694, temp: "--" },
+        { name: "Honolulu", timezone: "Pacific/Honolulu", lat: 21.3069, lon: -157.8583, temp: "--" },
+        { name: "Istanbul", timezone: "Europe/Istanbul", lat: 41.0082, lon: 28.9784, temp: "--" },
+        { name: "Jakarta", timezone: "Asia/Jakarta", lat: -6.2088, lon: 106.8456, temp: "--" },
+        { name: "Jerusalem", timezone: "Asia/Jerusalem", lat: 31.7683, lon: 35.2137, temp: "--" },
+        { name: "Johannesburg", timezone: "Africa/Johannesburg", lat: -26.2041, lon: 28.0473, temp: "--" },
+        { name: "Karachi", timezone: "Asia/Karachi", lat: 24.8607, lon: 67.0011, temp: "--" },
+        { name: "Kathmandu", timezone: "Asia/Kathmandu", lat: 27.7172, lon: 85.324, temp: "--" },
+        { name: "Kiev", timezone: "Europe/Kiev", lat: 50.4501, lon: 30.5234, temp: "--" },
+        { name: "Lagos", timezone: "Africa/Lagos", lat: 6.5244, lon: 3.3792, temp: "--" },
+        { name: "Lima", timezone: "America/Lima", lat: -12.0464, lon: -77.0428, temp: "--" },
+        { name: "Lisbon", timezone: "Europe/Lisbon", lat: 38.7223, lon: -9.1393, temp: "--" },
+        { name: "London", timezone: "Europe/London", lat: 51.5074, lon: -0.1278, temp: "--" },
+        { name: "Los Angeles", timezone: "America/Los_Angeles", lat: 34.0522, lon: -118.2437, temp: "--" },
+        { name: "Madrid", timezone: "Europe/Madrid", lat: 40.4168, lon: -3.7038, temp: "--" },
+        { name: "Manila", timezone: "Asia/Manila", lat: 14.5995, lon: 120.9842, temp: "--" },
+        { name: "Mexico City", timezone: "America/Mexico_City", lat: 19.4326, lon: -99.1332, temp: "--" },
+        { name: "Miami", timezone: "America/New_York", lat: 25.7617, lon: -80.1918, temp: "--" },
+        { name: "Moscow", timezone: "Europe/Moscow", lat: 55.7558, lon: 37.6173, temp: "--" },
+        { name: "Mumbai", timezone: "Asia/Kolkata", lat: 19.076, lon: 72.8777, temp: "--" },
+        { name: "Nairobi", timezone: "Africa/Nairobi", lat: -1.2921, lon: 36.8219, temp: "--" },
+        { name: "New Delhi", timezone: "Asia/Kolkata", lat: 28.6139, lon: 77.209, temp: "--" },
+        { name: "New York", timezone: "America/New_York", lat: 40.7128, lon: -74.006, temp: "--" },
+        { name: "Oslo", timezone: "Europe/Oslo", lat: 59.9139, lon: 10.7522, temp: "--" },
+        { name: "Paris", timezone: "Europe/Paris", lat: 48.8566, lon: 2.3522, temp: "--" },
+        { name: "Prague", timezone: "Europe/Prague", lat: 50.0755, lon: 14.4378, temp: "--" },
+        { name: "Rio de Janeiro", timezone: "America/Sao_Paulo", lat: -22.9068, lon: -43.1729, temp: "--" },
+        { name: "Riyadh", timezone: "Asia/Riyadh", lat: 24.7136, lon: 46.6753, temp: "--" },
+        { name: "Rome", timezone: "Europe/Rome", lat: 41.9028, lon: 12.4964, temp: "--" },
+        { name: "San Francisco", timezone: "America/Los_Angeles", lat: 37.7749, lon: -122.4194, temp: "--" },
+        { name: "Santiago", timezone: "America/Santiago", lat: -33.4489, lon: -70.6693, temp: "--" },
+        { name: "Sao Paulo", timezone: "America/Sao_Paulo", lat: -23.5505, lon: -46.6333, temp: "--" },
+        { name: "Seoul", timezone: "Asia/Seoul", lat: 37.5665, lon: 126.978, temp: "--" },
+        { name: "Shanghai", timezone: "Asia/Shanghai", lat: 31.2304, lon: 121.4737, temp: "--" },
+        { name: "Singapore", timezone: "Asia/Singapore", lat: 1.3521, lon: 103.8198, temp: "--" },
+        { name: "Stockholm", timezone: "Europe/Stockholm", lat: 59.3293, lon: 18.0686, temp: "--" },
+        { name: "Sydney", timezone: "Australia/Sydney", lat: -33.8688, lon: 151.2093, temp: "--" },
+        { name: "Taipei", timezone: "Asia/Taipei", lat: 25.033, lon: 121.5654, temp: "--" },
+        { name: "Tokyo", timezone: "Asia/Tokyo", lat: 35.6762, lon: 139.6503, temp: "--" },
+        { name: "Toronto", timezone: "America/Toronto", lat: 43.6532, lon: -79.3832, temp: "--" },
+        { name: "Vancouver", timezone: "America/Vancouver", lat: 49.2827, lon: -123.1207, temp: "--" },
+        { name: "Vienna", timezone: "Europe/Vienna", lat: 48.2082, lon: 16.3738, temp: "--" },
+        { name: "Warsaw", timezone: "Europe/Warsaw", lat: 52.2297, lon: 21.0122, temp: "--" },
+        { name: "Washington DC", timezone: "America/New_York", lat: 38.9072, lon: -77.0369, temp: "--" },
+        { name: "Zurich", timezone: "Europe/Zurich", lat: 47.3769, lon: 8.5417, temp: "--" }
+    ];
+
+    let selectedCities = JSON.parse(localStorage.getItem('selectedCities')) || [];
+    let currentFilter = "";
 
     function setupWorldClock() {
         const now = new Date();
 
-        // Manual formatting is more reliable than .split(' ') for cross-browser
         const h = now.getHours();
         const m = now.getMinutes();
         const s = now.getSeconds();
         const displayHours = h % 12 || 12;
         const ampm = h >= 12 ? 'PM' : 'AM';
 
-        dateEl.innerText = now.toDateString();
-        hoursEl.innerText = String(displayHours).padStart(2, '0');
-        minutesEl.innerText = String(m).padStart(2, '0');
-        secondsEl.innerText = String(s).padStart(2, '0');
-        meridiemEl.innerText = ampm;
+        if (dateEl) dateEl.innerText = now.toDateString();
+        if (hoursEl) hoursEl.innerText = String(displayHours).padStart(2, '0');
+        if (minutesEl) minutesEl.innerText = String(m).padStart(2, '0');
+        if (secondsEl) secondsEl.innerText = String(s).padStart(2, '0');
+        if (meridiemEl) meridiemEl.innerText = ampm;
 
-        const timezoneName = new Intl.DateTimeFormat('en-PH', {
-            timeZoneName: 'short'
-        }).formatToParts(now).find(part => part.type === 'timeZoneName').value;
-        timezoneEl.innerText = timezoneName;
+        if (timezoneEl) {
+            try {
+                const parts = new Intl.DateTimeFormat('en-PH', {
+                    timeZoneName: 'short'
+                }).formatToParts(now);
+                const tzPart = parts.find(part => part.type === 'timeZoneName');
+                timezoneEl.innerText = tzPart ? tzPart.value : '';
+            } catch (e) {
+                console.error("Timezone formatting error:", e);
+                timezoneEl.innerText = "";
+            }
+        }
+
+        renderSelectedCities();
     }
+
+    async function fetchAllWeather() {
+        if (selectedCities.length === 0) return;
+        const lats = selectedCities.map(c => c.lat).join(',');
+        const lons = selectedCities.map(c => c.lon).join(',');
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current_weather=true`);
+            const data = await res.json();
+            const results = Array.isArray(data) ? data : [data];
+            results.forEach((result, index) => {
+                if (result.current_weather) {
+                    selectedCities[index].temp = Math.round(result.current_weather.temperature);
+                }
+            });
+            localStorage.setItem('selectedCities', JSON.stringify(selectedCities));
+        } catch (e) {
+            console.error("Weather error:", e);
+        }
+        renderSelectedCities();
+    }
+
+    function renderSelectedCities() {
+        if (!selectedCitiesListEl) return;
+        
+        selectedCitiesListEl.innerHTML = selectedCities.map(city => {
+            const now = new Date();
+            let cityTime;
+            try {
+                cityTime = new Date(now.toLocaleString('en-US', { timeZone: city.timezone }));
+            } catch (e) {
+                cityTime = now;
+            }
+            
+            const diffMs = cityTime - now;
+            const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+            const diffStr = diffHours === 0 ? 'Same time' : (diffHours > 0 ? `${diffHours} hours ahead` : `${Math.abs(diffHours)} hours behind`);
+
+            const h = cityTime.getHours();
+            const m = cityTime.getMinutes();
+            const displayHours = h % 12 || 12;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const timeStr = `${String(displayHours).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+
+            return `
+                <div class="selected-city-text">
+                    <span class="city-name">${city.name}</span>
+                    <span class="city-time">${timeStr}</span>
+                    <span class="city-info">${city.temp}°C • ${diffStr}</span>
+                    <button class="btn-remove-city" onclick="removeCity('${city.name}')">×</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderFullCitiesList() {
+        if (!fullCitiesListEl) return;
+        const filtered = allCities.filter(c => c.name.toLowerCase().includes(currentFilter.toLowerCase()));
+        
+        fullCitiesListEl.innerHTML = filtered.map(city => {
+            const isSelected = selectedCities.some(sc => sc.name === city.name);
+            return `
+                <div class="selection-item ${isSelected ? 'selected' : ''}" onclick="toggleCitySelection('${city.name}')">
+                    <span>${city.name}</span>
+                    ${isSelected ? '<i class="fas fa-check"></i>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.toggleCitySelection = function(cityName) {
+        const city = allCities.find(c => c.name === cityName);
+        const index = selectedCities.findIndex(sc => sc.name === cityName);
+        
+        if (index === -1) {
+            selectedCities.push(city);
+        } else {
+            selectedCities.splice(index, 1);
+        }
+        
+        localStorage.setItem('selectedCities', JSON.stringify(selectedCities));
+        renderFullCitiesList();
+        renderSelectedCities();
+        fetchAllWeather();
+    };
+
+    window.removeCity = function(cityName) {
+        selectedCities = selectedCities.filter(sc => sc.name !== cityName);
+        localStorage.setItem('selectedCities', JSON.stringify(selectedCities));
+        renderSelectedCities();
+    };
+
+    btnAddCity.addEventListener('click', () => {
+        citySelectionModal.classList.remove('hidden');
+        renderFullCitiesList();
+    });
+
+    citySelectionCancel.addEventListener('click', () => {
+        citySelectionModal.classList.add('hidden');
+    });
+
+    worldCitySearch.addEventListener('input', (e) => {
+        currentFilter = e.target.value;
+        renderFullCitiesList();
+    });
+
+    // Initial fetch
+    fetchAllWeather();
     setInterval(setupWorldClock, 1000);
     setupWorldClock();
 
@@ -331,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function startTimer() {
         if (timerInterval) return;
 
-        let totalSeconds = (parseInt(t_h.innerText) * 3600) + (parseInt(t_m.innerText) * 60) + parseInt(t_s.innerText);
+        let totalSeconds = (parseInt(t_h.value) * 3600) + (parseInt(t_m.value) * 60) + parseInt(t_s.value);
         if (totalSeconds <= 0) return;
 
         timerInterval = setInterval(() => {
@@ -342,9 +550,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             totalSeconds--;
-            t_h.innerText = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-            t_m.innerText = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-            t_s.innerText = String(totalSeconds % 60).padStart(2, '0');
+            t_h.value = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            t_m.value = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            t_s.value = String(totalSeconds % 60).padStart(2, '0');
         }, 1000);
     }
 
@@ -357,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('.timer .btn-restart').addEventListener('click', () => {
         clearInterval(timerInterval);
         timerInterval = null;
-        t_h.innerText = '00'; t_m.innerText = '00'; t_s.innerText = '00';
+        t_h.value = '00'; t_m.value = '00'; t_s.value = '00';
     });
 
     // --- 4. STOPWATCH LOGIC ---
@@ -372,9 +580,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const m = Math.floor(sw_elapsed / 60000);
         const s = Math.floor((sw_elapsed % 60000) / 1000);
         const ms = Math.floor((sw_elapsed % 1000) / 10);
-        sw_m.innerText = String(m).padStart(2, '0');
-        sw_s.innerText = String(s).padStart(2, '0');
-        sw_ms.innerText = String(ms).padStart(2, '0');
+        sw_m.value = String(m).padStart(2, '0');
+        sw_s.value = String(s).padStart(2, '0');
+        sw_ms.value = String(ms).padStart(2, '0');
     }
 
     document.querySelector('.stopwatch .btn-start').addEventListener('click', () => {
@@ -446,16 +654,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const alarmRinging = document.getElementById('alarm-ringing');
     const ringingTime = document.getElementById('ringing-time');
 
-    const hourSelect = document.getElementById('alarm-hour');
-    const minuteSelect = document.getElementById('alarm-minute');
-    const ampmSelect = document.getElementById('alarm-ampm');
-
-    for (let i = 1; i <= 12; i++) {
-        hourSelect.innerHTML += `<option value="${i}">${String(i).padStart(2, '0')}</option>`;
-    }
-    for (let i = 0; i < 60; i++) {
-        minuteSelect.innerHTML += `<option value="${i}">${String(i).padStart(2, '0')}</option>`;
-    }
+    const alarmHourInput = document.getElementById('alarm-hour');
+    const alarmMinuteInput = document.getElementById('alarm-minute');
+    const alarmAmpmInput = document.getElementById('alarm-ampm');
 
     function saveAlarms() {
         localStorage.setItem('alarms', JSON.stringify(alarms));
@@ -472,10 +673,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         alarmsList.innerHTML = alarms.map(alarm => `
-            <div class="alarm-card ${alarm.enabled ? '' : 'disabled'}" data-id="${alarm.id}">
+            <div class="alarm-card ${alarm.enabled ? '' : 'disabled'} ${alarm.isSnooze ? 'snooze-card' : ''}" data-id="${alarm.id}">
                 <div class="alarm-info">
                     <h1>${formatAlarmTime(alarm.hour, alarm.minute, alarm.ampm)}</h1>
-                    <p>${alarm.enabled ? 'Alarm on' : 'Alarm off'}</p>
+                    <p>${alarm.isSnooze ? 'Snooze' : (alarm.enabled ? 'Alarm on' : 'Alarm off')}</p>
                 </div>
                 <div class="alarm-actions">
                     <button class="btn-delete" onclick="deleteAlarm(${alarm.id})">
@@ -511,9 +712,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let hour = now.getHours();
         const ampm = hour >= 12 ? 'PM' : 'AM';
         hour = hour % 12 || 12;
-        hourSelect.value = hour;
-        minuteSelect.value = 0;
-        ampmSelect.value = ampm;
+        alarmHourInput.value = String(hour).padStart(2, '0');
+        alarmMinuteInput.value = String(now.getMinutes()).padStart(2, '0');
+        alarmAmpmInput.value = ampm;
         alarmModal.classList.remove('hidden');
     });
 
@@ -522,9 +723,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('alarm-save').addEventListener('click', () => {
-        const hour = parseInt(hourSelect.value);
-        const minute = parseInt(minuteSelect.value);
-        const ampm = ampmSelect.value;
+        const hour = parseInt(alarmHourInput.value);
+        const minute = parseInt(alarmMinuteInput.value);
+        const ampm = alarmAmpmInput.value.toUpperCase();
+
+        if (isNaN(hour) || isNaN(minute) || !ampm) return;
 
         if (editingAlarmId) {
             const alarm = alarms.find(a => a.id === editingAlarmId);
@@ -564,9 +767,16 @@ document.addEventListener('DOMContentLoaded', function () {
         alarmSound.currentTime = 0;
         alarmRinging.classList.add('hidden');
         if (ringingAlarmId) {
-            const alarm = alarms.find(a => a.id === ringingAlarmId);
-            if (alarm) {
-                alarm.enabled = false;
+            const alarmIndex = alarms.findIndex(a => a.id === ringingAlarmId);
+            if (alarmIndex !== -1) {
+                const alarm = alarms[alarmIndex];
+                if (alarm.isSnooze) {
+                    // Remove snooze alarm once dismissed
+                    alarms.splice(alarmIndex, 1);
+                } else {
+                    // Just disable regular alarm
+                    alarm.enabled = false;
+                }
                 saveAlarms();
                 renderAlarms();
             }
@@ -578,6 +788,20 @@ document.addEventListener('DOMContentLoaded', function () {
         alarmSound.pause();
         alarmSound.currentTime = 0;
         alarmRinging.classList.add('hidden');
+        
+        // Disable or remove the original alarm that just rang
+        if (ringingAlarmId) {
+            const alarmIndex = alarms.findIndex(a => a.id === ringingAlarmId);
+            if (alarmIndex !== -1) {
+                const originalAlarm = alarms[alarmIndex];
+                if (originalAlarm.isSnooze) {
+                    alarms.splice(alarmIndex, 1);
+                } else {
+                    originalAlarm.enabled = false;
+                }
+            }
+        }
+
         const now = new Date();
         const snoozeTime = new Date(now.getTime() + 5 * 60 * 1000);
         let hour = snoozeTime.getHours();
